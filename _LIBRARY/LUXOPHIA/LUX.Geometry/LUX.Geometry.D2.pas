@@ -90,7 +90,18 @@ function InnerCenter( const P1_,P2_,P3_:TDoublePos2D ) :TDoublePos2D; overload;
 function CircumCenter( const P1_,P2_,P3_:TSingle2D ) :TSingle2D; overload;
 function CircumCenter( const P1_,P2_,P3_:TDouble2D ) :TDouble2D; overload;
 
+function CurveLength( const Ps_:array of TSingle2D ) :Single; overload;
+function CurveLength( const Ps_:array of TDouble2D ) :Single; overload;
+
+function ClosedCurveLength( const Ps_:array of TSingle2D ) :Single; overload;
+function ClosedCurveLength( const Ps_:array of TDouble2D ) :Single; overload;
+
+function BoundingBox( const Ps_:array of TSingle2D ) :TSingleArea2D; overload;
+function BoundingBox( const Ps_:array of TDouble2D ) :TDoubleArea2D; overload;
+
 implementation //############################################################### ■
+
+uses System.SysUtils;
 
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$【レコード】
 
@@ -327,14 +338,9 @@ begin
      L2 := P2_.Siz2;  E2 := P1_ - P3_;
      L3 := P3_.Siz2;  E3 := P2_ - P1_;
 
-     W := 2 * ( E2.X * E1.Y - E1.X * E2.Y );
-     {
-     W := 2 * ( E3.X * E2.Y - E2.X * E3.Y );
-     W := 2 * ( E1.X * E3.Y - E3.X * E1.Y );
      W := 2 * ( P2_.X * P1_.Y - P1_.X * P2_.Y
               + P3_.X * P2_.Y - P2_.X * P3_.Y
               + P1_.X * P3_.Y - P3_.X * P1_.Y );
-     }
 
      with Result do
      begin
@@ -352,19 +358,124 @@ begin
      L2 := P2_.Siz2;  E2 := P1_ - P3_;
      L3 := P3_.Siz2;  E3 := P2_ - P1_;
 
-     W := 2 * ( E2.X * E1.Y - E1.X * E2.Y );
-     {
-     W := 2 * ( E3.X * E2.Y - E2.X * E3.Y );
-     W := 2 * ( E1.X * E3.Y - E3.X * E1.Y );
      W := 2 * ( P2_.X * P1_.Y - P1_.X * P2_.Y
               + P3_.X * P2_.Y - P2_.X * P3_.Y
               + P1_.X * P3_.Y - P3_.X * P1_.Y );
-     }
 
      with Result do
      begin
           X := ( L1 * E1.Y + L2 * E2.Y + L3 * E3.Y ) / +W;
           Y := ( L1 * E1.X + L2 * E2.X + L3 * E3.X ) / -W;
+     end;
+end;
+
+//------------------------------------------------------------------------------
+
+function CurveLength( const Ps_:array of TSingle2D ) :Single;
+var
+   I :Integer;
+   P0, P1 :TSingle2D;
+begin
+     Result := 0;
+
+     P1 := Ps_[ 0 ];
+     for I := 1 to High( Ps_ ) do
+     begin
+          P0 := P1;  P1 := Ps_[ I ];
+
+          Result := Result + Distance( P0, P1 );
+     end;
+end;
+
+function CurveLength( const Ps_:array of TDouble2D ) :Single;
+var
+   I :Integer;
+   P0, P1 :TDouble2D;
+begin
+     Result := 0;
+
+     P1 := Ps_[ 0 ];
+     for I := 1 to High( Ps_ ) do
+     begin
+          P0 := P1;  P1 := Ps_[ I ];
+
+          Result := Result + Distance( P0, P1 );
+     end;
+end;
+
+//------------------------------------------------------------------------------
+
+function ClosedCurveLength( const Ps_:array of TSingle2D ) :Single;
+var
+   I :Integer;
+   P0, P1, P2 :TSingle2D;
+begin
+     Result := 0;
+
+     P2 := Ps_[ 0 ];
+
+     P1 := P2;
+     for I := 1 to High( Ps_ ) do
+     begin
+          P0 := P1;  P1 := Ps_[ I ];
+
+          Result := Result + Distance( P0, P1 );
+     end;
+
+     Result := Result + Distance( P1, P2 );
+end;
+
+function ClosedCurveLength( const Ps_:array of TDouble2D ) :Single;
+var
+   I :Integer;
+   P0, P1, P2 :TDouble2D;
+begin
+     Result := 0;
+
+     P2 := Ps_[ 0 ];
+
+     P1 := P2;
+     for I := 1 to High( Ps_ ) do
+     begin
+          P0 := P1;  P1 := Ps_[ I ];
+
+          Result := Result + Distance( P0, P1 );
+     end;
+
+     Result := Result + Distance( P1, P2 );
+end;
+
+//------------------------------------------------------------------------------
+
+function BoundingBox( const Ps_:array of TSingle2D ) :TSingleArea2D;
+var
+   P :TSingle2D;
+begin
+     Result := TSingleArea2D.NeInf;
+
+     for P in Ps_ do
+     begin
+          if P.X < Result.Min.X then Result.Min.X := P.X;
+          if P.Y < Result.Min.Y then Result.Min.Y := P.Y;
+
+          if Result.Max.X < P.X then Result.Max.X := P.X;
+          if Result.Max.Y < P.Y then Result.Max.Y := P.Y;
+     end;
+end;
+
+function BoundingBox( const Ps_:array of TDouble2D ) :TDoubleArea2D;
+var
+   P :TDouble2D;
+begin
+     Result := TDoubleArea2D.NeInf;
+
+     for P in Ps_ do
+     begin
+          if P.X < Result.Min.X then Result.Min.X := P.X;
+          if P.Y < Result.Min.Y then Result.Min.Y := P.Y;
+
+          if Result.Max.X < P.X then Result.Max.X := P.X;
+          if Result.Max.Y < P.Y then Result.Max.Y := P.Y;
      end;
 end;
 
