@@ -1,2 +1,2 @@
-﻿# Delauney2D
+﻿# Delaunay2D
 ２Ｄドロネー図を描く方法。

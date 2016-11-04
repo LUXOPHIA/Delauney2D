@@ -1,4 +1,4 @@
-program Delauney2D;
+program Delaunay2D;
 
 uses
   System.StartUpCopy,
